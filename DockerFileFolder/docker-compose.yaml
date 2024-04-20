@@ -1,0 +1,102 @@
+version: '3'
+
+services: 
+
+  dbpostg: 
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 'admin'
+      POSTGRES_USER: admin
+      POSTGRES_DB: dbpostgres
+    ports:
+      - 5432:5432
+    networks:
+      - web
+
+  
+  
+
+  
+  redis: 
+    container_name: redisp
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    networks:
+      - web
+    depends_on:
+      - dbpostg
+      
+      
+
+  app:
+    image: node-postgres
+    build: .
+    ports:
+      - 3000:3000
+    networks:
+      - web
+    depends_on:
+      - dbpostg
+      - mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongoBD
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - web
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongoBD:27017/
+    networks:
+      - web
+
+  test:
+    build: .
+    environment:
+      DB_HOST: dbpostg
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_NAME: dbpostgres
+      DB_PORT: 5432
+      DB_DIALECT: postgres
+    networks:
+      - web
+    depends_on:
+      - dbpostg
+      - app
+    volumes:
+      - .:/usr/src/app
+    command: tail -f /dev/null
+
+  postman:
+    image: postman/newman:alpine
+    restart: always
+    command:
+      run pruebasDeIntegracion.json -k
+      --environment=ambienteDeIntegracion.json
+      -r cli
+    volumes:
+    - ./tests/Postman:/etc/newman
+    depends_on:
+      - "app"
+      - "mongo"
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
