@@ -1,0 +1,39 @@
+
+//console.log("All set!");
+//todo inicia correctamente cuando se ve el mensaje "All set", se deben esperar unos segundos
+
+// Roles>
+1: 'Administrador' 
+2: 'Creador de encuestas' 
+3: 'Encuestado' 
+
+
+###
+GET http://localhost:3000
+
+
+###
+POST http://localhost:3000
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john@gmail.com"
+}
+
+
+### Login
+POST http://localhost:3000/auth/login
+BODY:
+{
+    "email": "john@gmail.com",
+    "password": "prueba"
+}
+devuelve un token
+
+### Logout
+POST http://localhost:3000/auth/logout 
+HEADERS:
+KEY> access-token   VALUE> token
+
+
